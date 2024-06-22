@@ -1,16 +1,27 @@
-# state_change_demo
+# MAD3-Submission-2 - Parales, Sucalit, Villarojo
+## mobile-3-session-1-stateful-management-REST-consumption
+Practice on using GET and POST methods on flutter
 
-States and how they affect each other
+## Workflow Distribution
 
-## Getting Started
+**See all posts - Villarojo**
+- Show a summary card instead of all the data (GET /posts)
 
-This project is a starting point for a Flutter application.
+**See the details of a specific post - Villarojo**
+- Show a detailed view via modal or a different screen (GET /posts/{id})
 
-A few resources to get you started if this is your first Flutter project:
+**Add a new post and see it in the overall list (POST /posts) - Parales**
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**Delete a post - Parales**
+- Resource will not be really updated on the server but it will be faked as if
+- Find a way to make it seem as if it was added in the UI
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Edit a post (PUT) - Sucalit**
+- Resource will not be really updated on the server but it will be faked as if
+- Find a way to make it seem as if it was added in the UI
+
+**Delete a post - Sucalit**
+- Resource will not be really updated on the server but it will be faked as if
+- Find a way to make it seem as if it was deleted in the UI
+
+**Ensure aesthetics and validation for inputs - ALL**
