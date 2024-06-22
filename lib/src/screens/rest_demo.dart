@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:state_change_demo/services/size_config.dart';
 import 'package:state_change_demo/src/models/post.model.dart';
 import 'package:state_change_demo/src/models/user.model.dart';
+import 'package:state_change_demo/src/screens/post_details_dialog.dart';
 
 class RestDemoScreen extends StatefulWidget {
   const RestDemoScreen({super.key});
@@ -61,7 +62,8 @@ class _RestDemoScreenState extends State<RestDemoScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           for (Post post in controller.postList)
-                            postContainer(post)
+                            postContainer(
+                                post, controller.users[post.userId], context)
                         ],
                       )),
                 );
@@ -141,8 +143,83 @@ class _AddPostDialogState extends State<AddPostDialog> {
   }
 }
 
+Widget postContainer(Post post, User? user, BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) =>
+            PostDetailDialog(post: post, user: user),
+      );
+    },
+    child: Container(
+      width: SizeConfig.blockSizeHorizontal! * 90,
+      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black38),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Text(
+              post.title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Container(
+            child: RichText(
+              textAlign: TextAlign.justify,
+              text: TextSpan(
+                text: post.body,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Post Created By: ${user?.name ?? 'Unknown'}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blueGrey,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class PostController with ChangeNotifier {
   Map<String, dynamic> posts = {};
+  Map<int, User> users = {};
   bool working = true;
   Object? error;
 
@@ -151,6 +228,7 @@ class PostController with ChangeNotifier {
   clear() {
     error = null;
     posts = {};
+    users = {};
     notifyListeners();
   }
 
@@ -204,6 +282,9 @@ class PostController with ChangeNotifier {
 
       List<Post> tmpPost = result.map((e) => Post.fromJson(e)).toList();
       posts = {for (Post p in tmpPost) "${p.id}": p};
+
+      await getUsers();
+
       working = false;
       notifyListeners();
     } catch (e, st) {
@@ -214,16 +295,27 @@ class PostController with ChangeNotifier {
       notifyListeners();
     }
   }
-}
 
-Widget postContainer(Post post) {
-  return Container(
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.blueAccent),
-          borderRadius: BorderRadius.circular(16)),
-      child: Text(post.toString()));
+  Future<void> getUsers() async {
+    try {
+      List result = [];
+      http.Response res = await HttpService.get(
+          url: "https://jsonplaceholder.typicode.com/users");
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        throw Exception("${res.statusCode} | ${res.body}");
+      }
+      result = jsonDecode(res.body);
+
+      List<User> tmpUser = result.map((e) => User.fromJson(e)).toList();
+      users = {for (User u in tmpUser) u.id: u};
+      notifyListeners();
+    } catch (e, st) {
+      print(e);
+      print(st);
+      error = e;
+      notifyListeners();
+    }
+  }
 }
 
 class UserController with ChangeNotifier {
