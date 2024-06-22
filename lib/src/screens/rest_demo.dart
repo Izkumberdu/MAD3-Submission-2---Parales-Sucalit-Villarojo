@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
+import 'package:state_change_demo/services/size_config.dart';
 import 'package:state_change_demo/src/models/post.model.dart';
 import 'package:state_change_demo/src/models/user.model.dart';
 
@@ -24,6 +25,8 @@ class _RestDemoScreenState extends State<RestDemoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig sizeConfig = SizeConfig();
+    sizeConfig.init(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Posts"),
@@ -58,14 +61,7 @@ class _RestDemoScreenState extends State<RestDemoScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           for (Post post in controller.postList)
-                            Container(
-                                padding: const EdgeInsets.all(8),
-                                margin: const EdgeInsets.only(bottom: 8),
-                                decoration: BoxDecoration(
-                                    border:
-                                        Border.all(color: Colors.blueAccent),
-                                    borderRadius: BorderRadius.circular(16)),
-                                child: Text(post.toString()))
+                            postContainer(post)
                         ],
                       )),
                 );
@@ -164,7 +160,7 @@ class PostController with ChangeNotifier {
       required int userId}) async {
     try {
       working = true;
-      if(error != null ) error = null;
+      if (error != null) error = null;
       print(title);
       print(body);
       print(userId);
@@ -218,6 +214,16 @@ class PostController with ChangeNotifier {
       notifyListeners();
     }
   }
+}
+
+Widget postContainer(Post post) {
+  return Container(
+      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.blueAccent),
+          borderRadius: BorderRadius.circular(16)),
+      child: Text(post.toString()));
 }
 
 class UserController with ChangeNotifier {
