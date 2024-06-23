@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:state_change_demo/src/models/post.model.dart';
 import 'package:state_change_demo/src/models/user.model.dart';
+import 'package:state_change_demo/src/screens/rest_demo.dart';
 
 class PostDetailDialog extends StatelessWidget {
   final Post post;
   final User? user;
+  final PostController controller;
 
-  const PostDetailDialog({required this.post, this.user, Key? key})
-      : super(key: key);
+  const PostDetailDialog({required this.post, this.user, required this.controller, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +42,13 @@ class PostDetailDialog extends StatelessWidget {
         TextButton(
           child: const Text('Close'),
           onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: const Text('Delete'),
+          onPressed: () async {
+            await controller.deletePost(post.id);
             Navigator.of(context).pop();
           },
         ),

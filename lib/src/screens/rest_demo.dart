@@ -63,7 +63,7 @@ class _RestDemoScreenState extends State<RestDemoScreen> {
                         children: [
                           for (Post post in controller.postList)
                             postContainer(
-                                post, controller.users[post.userId], context)
+                                post, controller.users[post.userId], controller, context)
                         ],
                       )),
                 );
@@ -143,13 +143,12 @@ class _AddPostDialogState extends State<AddPostDialog> {
   }
 }
 
-Widget postContainer(Post post, User? user, BuildContext context) {
+Widget postContainer(Post post, User? user, PostController controller, BuildContext context) {
   return GestureDetector(
     onTap: () {
       showDialog(
         context: context,
-        builder: (BuildContext context) =>
-            PostDetailDialog(post: post, user: user),
+        builder: (BuildContext context) => PostDetailDialog(post: post, user: user, controller: controller),
       );
     },
     child: Container(
@@ -316,6 +315,31 @@ class PostController with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> deletePost(int id) async {
+    try {
+      working = true;
+      notifyListeners();
+
+      http.Response res = await HttpService.delete(
+        url: "https://jsonplaceholder.typicode.com/posts/$id",
+      );
+
+      if (res.statusCode != 200) {
+        throw Exception("${res.statusCode} | ${res.body}");
+      }
+
+      posts.remove(id.toString());
+      working = false;
+      notifyListeners();
+    } catch (e, st) {
+      print(e);
+      print(st);
+      error = e;
+      working = false;
+      notifyListeners();
+    }
+  }
 }
 
 class UserController with ChangeNotifier {
@@ -371,6 +395,14 @@ class HttpService {
       Map<String, dynamic>? headers}) async {
     Uri uri = Uri.parse(url);
     return http.post(uri, body: jsonEncode(body), headers: {
+      'Content-Type': 'application/json',
+      if (headers != null) ...headers
+    });
+  }
+
+  static Future<http.Response> delete({required String url, Map<String, dynamic>? headers}) async {
+    Uri uri = Uri.parse(url);
+    return http.delete(uri, headers: {
       'Content-Type': 'application/json',
       if (headers != null) ...headers
     });
