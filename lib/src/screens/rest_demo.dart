@@ -267,6 +267,36 @@ class PostController with ChangeNotifier {
     }
   }
 
+  Future<Post> updatePost(
+      {required int id, required String title, required String body}) async {
+    try {
+      working = true;
+      if (error != null) error = null;
+
+      http.Response res = await HttpService.put(
+          url: "https://jsonplaceholder.typicode.com/posts/$id",
+          body: {"title": title, "body": body, "userId": 1});
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        throw Exception("${res.statusCode} | ${res.body}");
+      }
+
+      Map<String, dynamic> result = jsonDecode(res.body);
+
+      Post updatedPost = Post.fromJson(result);
+      posts[updatedPost.id.toString()] = updatedPost;
+      working = false;
+      notifyListeners();
+      return updatedPost;
+    } catch (e, st) {
+      print(e);
+      print(st);
+      error = e;
+      working = false;
+      notifyListeners();
+      return Post.empty;
+    }
+  }
+
   Future<void> getPosts() async {
     try {
       working = true;
@@ -395,6 +425,17 @@ class HttpService {
       Map<String, dynamic>? headers}) async {
     Uri uri = Uri.parse(url);
     return http.post(uri, body: jsonEncode(body), headers: {
+      'Content-Type': 'application/json',
+      if (headers != null) ...headers
+    });
+  }
+
+  static Future<http.Response> put(
+      {required String url,
+      required Map<dynamic, dynamic> body,
+      Map<String, dynamic>? headers}) async {
+    Uri uri = Uri.parse(url);
+    return http.put(uri, body: jsonEncode(body), headers: {
       'Content-Type': 'application/json',
       if (headers != null) ...headers
     });
